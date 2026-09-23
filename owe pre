@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wholesale Khata & Business Dashboard</title>
+    <!-- Tailwind CSS Engine -->
+    <script src="https://tailwindcss.com"></script>
+    <style>
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans min-h-screen pb-16">
+
+    <!-- Custom Business Header -->
+    <header class="bg-indigo-700 text-white p-4 shadow-lg sticky top-0 z-50 flex justify-between items-center">
+        <div>
+            <h1 id="biz-title" class="text-xl font-black tracking-wide uppercase">My Wholesale Hub</h1>
+            <p class="text-xs text-indigo-200">Wholesale Khata Dashboard</p>
+        </div>
+        <div class="flex space-x-2">
+            <button onclick="exportToCSV()" class="text-xs bg-emerald-600 hover:bg-emerald-700 px-2 py-1 rounded font-bold shadow">📥 Export CSV</button>
+            <button onclick="changeBusinessName()" class="text-xs bg-indigo-800 hover:bg-indigo-900 px-2 py-1 rounded border border-indigo-500 shadow">✏️ Rename</button>
+        </div>
+    </header>
+
+    <main class="max-w-md mx-auto p-4">
+        
+        <!-- Live Financial Summary -->
+        <div class="bg-white p-4 rounded-xl shadow-sm mb-4 grid grid-cols-2 gap-4 border-l-4 border-indigo-600">
+            <div class="border-r border-gray-200 pr-2">
+                <p class="text-xs text-gray-500 uppercase font-bold">Total Receivables</p>
+                <p id="total-receivable" class="text-xl font-extrabold text-green-600">₹0.00</p>
+            </div>
+            <div class="pl-2">
+                <p class="text-xs text-gray-500 uppercase font-bold">Total Payables</p>
+                <p id="total-payable" class="text-xl font-extrabold text-red-600">₹0.00</p>
+            </div>
+        </div>
+
+        <!-- TAB 1: LEDGER ENTRY -->
+        <div id="ledger-tab" class="tab-content active">
+            <div class="bg-white p-4 rounded-xl shadow-sm mb-4">
+                <h3 class="font-bold text-gray-800 mb-3 text-sm">💰 Log Customer / Supplier Payment</h3>
+                <form id="khata-form" class="space-y-3">
+                    <input type="text" id="party-name" placeholder="Party / Customer Name" class="w-full p-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500" required>
+                    
+                    <div class="grid grid-cols-2 gap-2">
+                        <select id="party-type" class="p-2.5 border rounded-lg text-sm bg-gray-50">
+                            <option value="customer">Retail Customer</option>
+                            <option value="supplier">Factory Supplier</option>
+                        </select>
+                        <select id="tx-type" class="p-2.5 border rounded-lg text-sm bg-gray-50">
+                            <option value="udhaar">Udhaar (Credit)</option>
+                            <option value="payment">Payment Settled</option>
+                        </select>
+                    </div>
+                    
+                    <input type="number" id="tx-amount" placeholder="Transaction Amount (₹)" class="w-full p-2.5 border rounded-lg text-sm" required>
+                    <input type="text" id="tx-note" placeholder="Payment Details (e.g. Rice Boxes, UPI, Cash)" class="w-full p-2.5 border rounded-lg text-sm">
+                    
+                    <button type="submit" class="w-full bg-indigo-600 text-white p-2.5 rounded-lg font-bold text-sm tracking-wide shadow hover:bg-indigo-700">Save Transaction</button>
+                </form>
+            </div>
+
+            <!-- Ledger Logs -->
+            <div class="bg-white p-4 rounded-xl shadow-sm">
+                <h3 class="font-bold text-gray-800 mb-3 text-sm">📋 Master Payment History</h3>
+                <div id="ledger-list" class="space-y-2 max-h-72 overflow-y-auto text-sm">
+                    <!-- Dynamic logs injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: CUSTOMERS LIST -->
+        <div id="customers-tab" class="tab-content">
+            <div class="bg-white p-4 rounded-xl shadow-sm">
+                <h3 class="font-bold text-gray-800 mb-3 text-sm">👥 Active Directory & Net Balances</h3>
+                <div id="customer-directory" class="space-y-3">
+                    <!-- Dynamic customer cards injected here -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around p-2 shadow-xl max-w-md mx-auto">
+        <button onclick="switchTab('ledger-tab')" class="flex flex-col items-center text-indigo-600 font-bold text-xs">
+            <span class="text-lg">📊</span>
+            <span>Ledger</span>
+        </button>
+        <button onclick="switchTab('customers-tab')" class="flex flex-col items-center text-gray-500 font-bold text-xs">
+            <span class="text-lg">👥</span>
+            <span>Parties</span>
+        </button>
+    </nav>
+
+    <!-- App Engine Logic -->
+    <script>
+        let transactions = JSON.parse(localStorage.getItem('wh_khata_v2_tx')) || [];
+        let businessName = localStorage.getItem('wh_khata_biz_name') || "My Wholesale Business";
+
+        function setBusinessHeader() {
+            document.getElementById('biz-title').innerText = businessName;
+        }
+
+        function changeBusinessName() {
+            let newName = prompt("Enter your Business Name:", businessName);
+            if (newName && newName.trim() !== "") {
+                businessName = newName.trim();
+                localStorage.setItem('wh_khata_biz_name', businessName);
+                setBusinessHeader();
+            }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        document.getElementById('khata-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const tx = {
+                id: Date.now(),
+                name: document.getElementById('party-name').value.trim(),
+                partyType: document.getElementById('party-type').value,
+                txType: document.getElementById('tx-type').value,
+                amount: parseFloat(document.getElementById('tx-amount').value),
+                note: document.getElementById('tx-note').value.trim() || "No details",
+                date: new Date().toLocaleDateString('en-IN', {day: 'numeric', month: 'short', hour: '2-digit', minute:'2-digit'})
+            };
+            transactions.unshift(tx);
+            localStorage.setItem('wh_khata_v2_tx', JSON.stringify(transactions));
+            document.getElementById('khata-form').reset();
+            renderAll();
+        });
+
+        function exportToCSV() {
+            if(transactions.length === 0) {
+                alert("No transaction entries to export yet!");
+                return;
+            }
+            let csvContent = "data:text/csv;charset=utf-8,Date,Party Name,Type,Transaction Mode,Amount,Details\n";
+            transactions.forEach(t => {
+                csvContent += `"${t.date}","${t.name}","${t.partyType}","${t.txType}",${t.amount},"${t.note}"\n`;
+            });
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `${businessName.replace(/\s+/g, '_')}_Ledger.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function renderAll() {
+            let rec = 0, pay = 0;
+            let partyBalances = {};
+
+            transactions.forEach(t => {
+                if (!partyBalances[t.name]) {
+                    partyBalances[t.name] = { type: t.partyType, balance: 0 };
+                }
+                let factor = (t.txType === 'udhaar') ? 1 : -1;
+                partyBalances[t.name].balance += (t.amount * factor);
+            });
+
+            Object.keys(partyBalances).forEach(name => {
+                if(partyBalances[name].type === 'customer') {
+                    rec += partyBalances[name].balance;
+                } else {
+                    pay += partyBalances[name].balance;
+                }
+            });
+
+            document.getElementById('total-receivable').innerText = `₹${rec.toFixed(2)}`;
+            document.getElementById('total-payable').innerText = `₹${pay.toFixed(2)}`;
+
+            const listEl = document.getElementById('ledger-list');
+            listEl.innerHTML = transactions.length === 0 ? '<p class="text-gray-400 text-center py-4">No payments recorded yet.</p>' : '';
+            
+            transactions.forEach(t => {
+                const color = t.txType === 'udhaar' ? 'text-red-600' : 'text-green-600';
+                listEl.innerHTML += `
+                    <div class="p-3 border-b bg-gray-50 rounded-lg flex flex-col space-y-1">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <span class="font-bold text-gray-800">${t.name}</span>
+                                <span class="text-[10px] ml-1 px-1.5 py-0.5 rounded bg-gray-200 text-gray-600 font-semibold uppercase">${t.partyType}</span>
+                            </div>
+                            <span class="font-black text-base ${color}">₹${t.amount}</span>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500">
+                            <span class="italic text-gray-600 font-medium">📝 Details: ${t.note}</span>
+                            <span>${t.date}</span>
+                        </div>
+});
+const dirEl = document.getElementById('customer-directory');

@@ -7,14 +7,14 @@
     <!-- Tailwind CSS Engine -->
     <script src="https://unpkg.com"></script>
 </head>
-<body class="bg-slate-50 font-sans min-h-screen flex text-slate-800">
+<body class="bg-slate-100 font-sans min-h-screen flex text-slate-800">
 
     <!-- ================= SIDEBAR MENU SECTION (DARK STYLING) ================= -->
     <aside class="w-72 bg-slate-900 text-slate-300 flex flex-col shadow-xl flex-shrink-0">
         <!-- Brand Header Section -->
-        <div class="p-5 border-b border-slate-800 flex items-center space-x-3 bg-slate-950">
+        <div class="p-5 border-b border-slate-800 flex items-center space-x-3 bg-slate-955">
             <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-xl text-white font-black shadow-inner">
-                🏪
+                🏢
             </div>
             <div>
                 <h2 id="biz-title" class="text-base font-extrabold text-white tracking-wide uppercase">A1 Electronic St.</h2>
@@ -74,7 +74,7 @@
                     <p id="total-receivable" class="text-2xl font-black text-slate-900 mt-1">AED 0</p>
                     <p id="total-receivable-parties" class="text-[11px] text-slate-400 mt-1 font-medium">From 0 Parties</p>
                 </div>
-                <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg font-bold shadow-sm">↓</div>
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg font-bold shadow-sm">↓</div>
             </div>
 
             <!-- Total Payables Metric Block -->
@@ -84,7 +84,7 @@
                     <p id="total-payable" class="text-2xl font-black text-slate-900 mt-1">AED 0</p>
                     <p id="total-payable-parties" class="text-[11px] text-slate-400 mt-1 font-medium">From 0 Parties</p>
                 </div>
-                <div class="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center text-lg font-bold shadow-sm">↑</div>
+                <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-lg font-bold shadow-sm">↑</div>
             </div>
         </section>
 
@@ -104,7 +104,7 @@
                     </select>
                 </div>
 
-                <!-- Abstract Stylized Visual Sales Volume Performance Chart Area -->
+                <!-- Visual Sales Volume Performance Chart Area -->
                 <div class="w-full h-44 bg-slate-50 border border-slate-100 rounded-xl relative flex items-end p-2 overflow-hidden shadow-inner">
                     <svg viewBox="0 0 100 30" class="w-full h-full text-indigo-500 drop-shadow-md" preserveAspectRatio="none">
                         <path d="M0,25 Q15,28 30,22 T60,18 T75,4 T90,20 T100,15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
@@ -134,7 +134,7 @@
                             </tr>
                         </thead>
                         <tbody id="master-journal-rows" class="text-sm divide-y divide-slate-100 font-medium">
-                            <!-- Java Script row entries injected dynamically here -->
+                            <!-- JavaScript row entries injected dynamically here -->
                         </tbody>
                     </table>
                 </div>
@@ -144,8 +144,8 @@
     </main>
 
     <!-- ================= DATA INPUT POPUP MODAL ENGINE ================= -->
-    <div id="voucher-modal" class="fixed inset-0 bg-slate-950/40 backdrop-blur-xs z-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-slate-200 animate-fade-in mx-4">
+    <div id="voucher-modal" class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-slate-200 mx-4">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
                 <h3 class="font-extrabold text-base text-slate-900 uppercase tracking-wide">📥 Post Business Voucher</h3>
-                document.getElementById('total-receivable-parties').innerText = From ${distinctCustomers.size} Parties;document.getElementById('total-payable-parties').innerText = From ${distinctSuppliers.size} Party;const logRows = document.getElementById('master-journal-rows');logRows.innerHTML = transactions.length === 0? 'No ledger transaction logs recorded yet.': '';transactions.forEach(t => {const isUdhaar = t.txType === 'udhaar';const fontColor = isUdhaar ? 'text-rose-600' : 'text-emerald-600';const labelBadge = t.partyType === 'customer' ? 'bg-indigo-50 text-indigo-700' : 'bg-amber-50 text-amber-700';logRows.innerHTML += `${t.date}${t.name}${t.partyType}${t.note}\({isUdhaar ? '+' : '-'} AED \){t.amount.toFixed(2)}`;});}syncFirmUI();renderAll();
+                if (t.txType === 'udhaar') { rec += t.amount; totalSales += t.amount; }if (t.txType === 'payment') { rec -= t.amount; }} else {distinctSuppliers.add(t.name);if (t.txType === 'udhaar') { pay += t.amount; }if (t.txType === 'payment') { pay -= t.amount; }}});document.getElementById('total-receivable').innerText = AED ${Math.max(0, rec).toLocaleString('en-US')};document.getElementById('total-payable').innerText = AED ${Math.max(0, pay).toLocaleString('en-US')};document.getElementById('total-sales-metric').innerText = AED ${totalSales.toLocaleString('en-US', {minimumFractionDigits: 2})};document.getElementById('total-receivable-parties').innerText = From ${distinctCustomers.size} Parties;document.getElementById('total-payable-parties').innerText = From ${distinctSuppliers.size} Parties;const logRows = document.getElementById('master-journal-rows');logRows.innerHTML = transactions.length === 0? 'No ledger transaction logs recorded yet.': '';transactions.forEach(t => {const isUdhaar = t.txType === 'udhaar';const fontColor = isUdhaar ? 'text-rose-600' : 'text-emerald-600';const labelBadge = t.partyType === 'customer' ? 'bg-indigo-50 text-indigo-700' : 'bg-amber-50 text-amber-700';logRows.innerHTML += `${t.date}${t.name}${t.partyType}${t.note}\({isUdhaar ? '+' : '-'} AED \){t.amount.toFixed(2)}`;});}syncFirmUI();renderAll();

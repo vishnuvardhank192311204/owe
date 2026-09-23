@@ -3,198 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wholesale Khata & Business Dashboard</title>
+    <title>Enterprise ERP & Wholesale Khata Ledger</title>
     <!-- Tailwind CSS Engine -->
-    <script src="https://tailwindcss.com"></script>
+    <script src="https://unpkg.com"></script>
     <style>
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        .page-content { display: none; }
+        .page-content.active { display: block; }
     </style>
 </head>
-<body class="bg-gray-100 font-sans min-h-screen pb-16">
+<body class="bg-gray-100 font-sans min-h-screen text-gray-800 flex flex-col">
 
-    <!-- Custom Business Header -->
-    <header class="bg-indigo-700 text-white p-4 shadow-lg sticky top-0 z-50 flex justify-between items-center">
-        <div>
-            <h1 id="biz-title" class="text-xl font-black tracking-wide uppercase">My Wholesale Hub</h1>
-            <p class="text-xs text-indigo-200">Wholesale Khata Dashboard</p>
+    <!-- TOP HEADER: BUSINESS BRANDING AND LOGO PROFILE -->
+    <header class="bg-slate-900 text-white px-6 py-4 shadow-md flex flex-col md:flex-row justify-between items-center gap-4 w-full border-b-4 border-indigo-600">
+        <div class="flex items-center space-x-4">
+            <!-- Custom Brand Logo Circle Icon -->
+            <div id="biz-logo-container" class="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-2xl font-black text-white shadow-inner border border-indigo-400">
+                🏢
+            </div>
+            <div>
+                <div class="flex items-center space-x-2">
+                    <h1 id="display-biz-name" class="text-2xl font-black tracking-wide uppercase text-indigo-400">My Wholesale Enterprise</h1>
+                </div>
+                <p id="display-biz-details" class="text-xs text-slate-400 italic">GSTIN: Not Set | Sector: Bulk Trading Hub</p>
+            </div>
         </div>
-        <div class="flex space-x-2">
-            <button onclick="exportToCSV()" class="text-xs bg-emerald-600 hover:bg-emerald-700 px-2 py-1 rounded font-bold shadow">📥 Export CSV</button>
-            <button onclick="changeBusinessName()" class="text-xs bg-indigo-800 hover:bg-indigo-900 px-2 py-1 rounded border border-indigo-500 shadow">✏️ Rename</button>
-        </div>
+        
+        <!-- Application Top Navigation Tabs Menu -->
+        <nav class="flex flex-wrap gap-2 bg-slate-800 p-1.5 rounded-xl border border-slate-700">
+            <button onclick="switchPage('entry-page')" id="btn-entry-page" class="nav-btn px-4 py-2 rounded-lg text-sm font-bold bg-indigo-600 text-white transition-all">📝 Data Entry Desk</button>
+            <button onclick="switchPage('directory-page')" id="btn-directory-page" class="nav-btn px-4 py-2 rounded-lg text-sm font-bold text-slate-300 hover:bg-slate-700 transition-all">👥 Customer Profiles</button>
+            <button onclick="switchPage('database-page')" id="btn-database-page" class="nav-btn px-4 py-2 rounded-lg text-sm font-bold text-slate-300 hover:bg-slate-700 transition-all">💾 Data & Backup Center</button>
+        </nav>
     </header>
 
-    <main class="max-w-md mx-auto p-4">
+    <!-- MAIN APP SCREEN BODY -->
+    <main class="flex-1 w-full max-w-7xl px-6 py-8 mx-auto">
         
-        <!-- Live Financial Summary -->
-        <div class="bg-white p-4 rounded-xl shadow-sm mb-4 grid grid-cols-2 gap-4 border-l-4 border-indigo-600">
-            <div class="border-r border-gray-200 pr-2">
-                <p class="text-xs text-gray-500 uppercase font-bold">Total Receivables</p>
-                <p id="total-receivable" class="text-xl font-extrabold text-green-600">₹0.00</p>
-            </div>
-            <div class="pl-2">
-                <p class="text-xs text-gray-500 uppercase font-bold">Total Payables</p>
-                <p id="total-payable" class="text-xl font-extrabold text-red-600">₹0.00</p>
-            </div>
-        </div>
-
-        <!-- TAB 1: LEDGER ENTRY -->
-        <div id="ledger-tab" class="tab-content active">
-            <div class="bg-white p-4 rounded-xl shadow-sm mb-4">
-                <h3 class="font-bold text-gray-800 mb-3 text-sm">💰 Log Customer / Supplier Payment</h3>
-                <form id="khata-form" class="space-y-3">
-                    <input type="text" id="party-name" placeholder="Party / Customer Name" class="w-full p-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500" required>
-                    
-                    <div class="grid grid-cols-2 gap-2">
-                        <select id="party-type" class="p-2.5 border rounded-lg text-sm bg-gray-50">
-                            <option value="customer">Retail Customer</option>
-                            <option value="supplier">Factory Supplier</option>
-                        </select>
-                        <select id="tx-type" class="p-2.5 border rounded-lg text-sm bg-gray-50">
-                            <option value="udhaar">Udhaar (Credit)</option>
-                            <option value="payment">Payment Settled</option>
-                        </select>
-                    </div>
-                    
-                    <input type="number" id="tx-amount" placeholder="Transaction Amount (₹)" class="w-full p-2.5 border rounded-lg text-sm" required>
-                    <input type="text" id="tx-note" placeholder="Payment Details (e.g. Rice Boxes, UPI, Cash)" class="w-full p-2.5 border rounded-lg text-sm">
-                    
-                    <button type="submit" class="w-full bg-indigo-600 text-white p-2.5 rounded-lg font-bold text-sm tracking-wide shadow hover:bg-indigo-700">Save Transaction</button>
-                </form>
-            </div>
-
-            <!-- Ledger Logs -->
-            <div class="bg-white p-4 rounded-xl shadow-sm">
-                <h3 class="font-bold text-gray-800 mb-3 text-sm">📋 Master Payment History</h3>
-                <div id="ledger-list" class="space-y-2 max-h-72 overflow-y-auto text-sm">
-                    <!-- Dynamic logs injected here -->
+        <!-- GLOBAL BALANCE BAR -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white rounded-2xl p-5 shadow-sm border-l-8 border-emerald-500 flex justify-between items-center">
+                <div>
+                    <p class="text-xs text-gray-400 uppercase font-bold tracking-wider">Total Receivables (Retailers Owe You)</p>
+                    <p id="total-receivable" class="text-3xl font-black text-emerald-600 mt-1">₹0.00</p>
                 </div>
+                <span class="text-3xl bg-emerald-50 p-3 rounded-xl">📈</span>
             </div>
-        </div>
-
-        <!-- TAB 2: CUSTOMERS LIST -->
-        <div id="customers-tab" class="tab-content">
-            <div class="bg-white p-4 rounded-xl shadow-sm">
-                <h3 class="font-bold text-gray-800 mb-3 text-sm">👥 Active Directory & Net Balances</h3>
-                <div id="customer-directory" class="space-y-3">
-                    <!-- Dynamic customer cards injected here -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border-l-8 border-rose-500 flex justify-between items-center">
+                <div>
+                    <p class="text-xs text-gray-400 uppercase font-bold tracking-wider">Total Payables (You Owe Suppliers)</p>
+                    <p id="total-payable" class="text-3xl font-black text-rose-600 mt-1">₹0.00</p>
                 </div>
+                <span class="text-3xl bg-rose-50 p-3 rounded-xl">📉</span>
             </div>
         </div>
 
-    </main>
-
-    <!-- Bottom Navigation Bar -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around p-2 shadow-xl max-w-md mx-auto">
-        <button onclick="switchTab('ledger-tab')" class="flex flex-col items-center text-indigo-600 font-bold text-xs">
-            <span class="text-lg">📊</span>
-            <span>Ledger</span>
-        </button>
-        <button onclick="switchTab('customers-tab')" class="flex flex-col items-center text-gray-500 font-bold text-xs">
-            <span class="text-lg">👥</span>
-            <span>Parties</span>
-        </button>
-    </nav>
-
-    <!-- App Engine Logic -->
-    <script>
-        let transactions = JSON.parse(localStorage.getItem('wh_khata_v2_tx')) || [];
-        let businessName = localStorage.getItem('wh_khata_biz_name') || "My Wholesale Business";
-
-        function setBusinessHeader() {
-            document.getElementById('biz-title').innerText = businessName;
-        }
-
-        function changeBusinessName() {
-            let newName = prompt("Enter your Business Name:", businessName);
-            if (newName && newName.trim() !== "") {
-                businessName = newName.trim();
-                localStorage.setItem('wh_khata_biz_name', businessName);
-                setBusinessHeader();
-            }
-        }
-
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-        }
-
-        document.getElementById('khata-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const tx = {
-                id: Date.now(),
-                name: document.getElementById('party-name').value.trim(),
-                partyType: document.getElementById('party-type').value,
-                txType: document.getElementById('tx-type').value,
-                amount: parseFloat(document.getElementById('tx-amount').value),
-                note: document.getElementById('tx-note').value.trim() || "No details",
-                date: new Date().toLocaleDateString('en-IN', {day: 'numeric', month: 'short', hour: '2-digit', minute:'2-digit'})
-            };
-            transactions.unshift(tx);
-            localStorage.setItem('wh_khata_v2_tx', JSON.stringify(transactions));
-            document.getElementById('khata-form').reset();
-            renderAll();
-        });
-
-        function exportToCSV() {
-            if(transactions.length === 0) {
-                alert("No transaction entries to export yet!");
-                return;
-            }
-            let csvContent = "data:text/csv;charset=utf-8,Date,Party Name,Type,Transaction Mode,Amount,Details\n";
-            transactions.forEach(t => {
-                csvContent += `"${t.date}","${t.name}","${t.partyType}","${t.txType}",${t.amount},"${t.note}"\n`;
-            });
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `${businessName.replace(/\s+/g, '_')}_Ledger.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        function renderAll() {
-            let rec = 0, pay = 0;
-            let partyBalances = {};
-
-            transactions.forEach(t => {
-                if (!partyBalances[t.name]) {
-                    partyBalances[t.name] = { type: t.partyType, balance: 0 };
-                }
-                let factor = (t.txType === 'udhaar') ? 1 : -1;
-                partyBalances[t.name].balance += (t.amount * factor);
-            });
-
-            Object.keys(partyBalances).forEach(name => {
-                if(partyBalances[name].type === 'customer') {
-                    rec += partyBalances[name].balance;
-                } else {
-                    pay += partyBalances[name].balance;
-                }
-            });
-
-            document.getElementById('total-receivable').innerText = `₹${rec.toFixed(2)}`;
-            document.getElementById('total-payable').innerText = `₹${pay.toFixed(2)}`;
-
-            const listEl = document.getElementById('ledger-list');
-            listEl.innerHTML = transactions.length === 0 ? '<p class="text-gray-400 text-center py-4">No payments recorded yet.</p>' : '';
-            
-            transactions.forEach(t => {
-                const color = t.txType === 'udhaar' ? 'text-red-600' : 'text-green-600';
-                listEl.innerHTML += `
-                    <div class="p-3 border-b bg-gray-50 rounded-lg flex flex-col space-y-1">
-                        <div class="flex justify-between items-center">
+        <!-- ================= PAGE 1: DATA ENTERING PAGE ================= -->
+        <div id="entry-page" class="page-content active space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Left Side: Form Input -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                    <h3 class="font-black text-gray-900 mb-4 text-base uppercase tracking-wide text-indigo-700 flex items-center space-x-2">
+                        <span>📥</span> <span>Voucher Creation Deck</span>
+                    </h3>
+                    <form id="khata-form" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Party / Merchant Name</label>
+                            <input type="text" id="party-name" placeholder="Enter custom name..." class="w-full p-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50" required>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <span class="font-bold text-gray-800">${t.name}</span>
-                                <span class="text-[10px] ml-1 px-1.5 py-0.5 rounded bg-gray-200 text-gray-600 font-semibold uppercase">${t.partyType}</span>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Book Type</label>
+                                <select id="party-type" class="w-full p-3 border rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <option value="customer">Retail Customer</option>
+                                    <option value="supplier">Factory Supplier</option>
+                                </select>
                             </div>
-                            <span class="font-black text-base ${color}">₹${t.amount}</span>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Entry Mode</label>
+                                <select id="tx-type" class="w-full p-3 border rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <option value="udhaar">Udhaar (Credit)</option>
+                                    <option value="payment">Cash Settlement</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="flex justify-between text-xs text-gray-500">
-                            <span class="italic text-gray-600 font-medium">📝 Details: ${t.note}</span>
-                            <span>${t.date}</span>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Amount (₹)</label>
+                            <input type="number" id="tx-amount" placeholder="₹ Value" class="w-full p-3 border rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
                         </div>
-});
-const dirEl = document.getElementById('customer-directory');
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Narration / Payment Details</label>
+                            <input type="text" id="tx-note" placeholder="e.g. 50 Boxes Fabric, Bank Transfer" class="w-full p-3 border rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-xl font-bold text-sm tracking-wide shadow-md transition-all">
+                            Post Voucher Entry
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Right Side: Master Real-Time Audit Log Table -->
+                <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                    <h3 class="font-black text-gray-900 mb-4 text-base uppercase tracking-wide text-slate-700">
+                        📋 Master Historical Book Journal
+                    </h3>
+                    <div class="overflow-x-auto max-h-[380px] overflow-y-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="sticky top-0 bg-gray-50 shadow-sm">
+                                <tr class="text-xs font-bold text-gray-400 uppercase border-b">
+                                    <th class="p-3">Timestamp</th>
+                                    <th class="p-3">Party Name</th>
+                                    <th class="p-3">Book Category</th>
+                                    <th class="p-3">Voucher Details</th>
+                                    <th class="p-3 text-right">Transaction Value</th>
+                                </tr>
+                            </thead>
+                            <tbody id="master-journal-rows" class="text-sm divide-y divide-slate-100">
+                                <!-- JavaScript injects records here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PAGE 2: CUSTOMER & SUPPLIER DETAILS PAGE ================= -->
+        <div id="directory-page" class="page-content space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Customer Split Card -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col min-h-[450px]">
+                    <div class="flex justify-between items-center border-b pb-3 mb-4">
+                        <h3 class="font-black text-gray-900 text-base uppercase tracking-wide text-emerald-700">
+                            👥 Retailer Client Profile Directory
+                        </h3>
+                        <span id="cust-count" class="text-xs font-bold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full">0 Accounts</span>
+                    </div>
+                    <div id="customer-directory" class="space-y-3 overflow-y-auto flex-1">
+                        <!-- Custom dynamic blocks -->
+                    </div>
+                </div>
+
+                <!-- Supplier Split Card -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col min-h-[450px]">
+                    <div class="flex justify-between items-center border-b pb-3 mb-4">
+                        <h3 class="font-black text-gray-900 text-base uppercase tracking-wide text-rose-700">
+                            🏭 Wholesale Supplier Profile Directory
+                        </h3>
+                        text-base text-gray-900">${name}</h4> <p class="text-[10px] uppercase font-bold text-gray-400 mt-0.5">${detailLabel}</p> </div> <div class="text-right"> <p class="text-base font-black text-slate-800">₹${cleanBal}</p> </div> </div>;} else {sCount++;const statusClass = data.balance >= 0 ? 'border-rose-400 bg-rose-50/40 text-rose-700' : 'border-emerald-400 bg-emerald-50/40 text-emerald-700';const detailLabel = data.balance >= 0 ? 'Outstanding Bills Payable' : 'Advance Balance Deposited';suppDir.innerHTML +=  <div class="p-4 rounded-xl border flex justify-between items-center bg-gray-50 hover:bg-white shadow-sm transition-all ${statusClass}"> <div> <h4 class="font-extrabold text-base text-gray-900">${name}</h4> <p class="text-[10px] uppercase font-bold text-gray-400 mt-0.5">${detailLabel}</p> </div> <div class="text-right"> <p class="text-base font-black text-slate-800">₹${cleanBal}</p> </div> </div>;}});document.getElementById('cust-count').innerText = ${cCount} Accounts;document.getElementById('supp-count').innerText = ${sCount} Accounts;if(cCount === 0) custDir.innerHTML = 'No client profile metrics logged.';if(sCount === 0) suppDir.innerHTML = 'No factory supplier accounts logged.';}// Initialize ApplicationsyncProfileUI();renderAll();
